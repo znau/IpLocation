@@ -8,7 +8,15 @@ A plugin to get the location information of an IP address used in Flow Launcher.
 
 Type `ip` get the current ip location information
 
+![demo1](https://github.com/znau/IpLocation/master/src/assets/demo1.png)
+
 Type `ip` and enter an IP address to show the location information of the specified ip, like ` tt 8.8.8.4 `
+
+![demo2](https://github.com/znau/IpLocation/master/src/assets/demo1.png)
+
+Type `ip clear` to clean cache
+
+![demo3](https://github.com/znau/IpLocation/master/src/assets/demo1.png)
 
 ## Packages
 <table>
@@ -33,6 +41,21 @@ Type `ip` and enter an IP address to show the location information of the specif
       </td>
       <td>
         Promise based HTTP client for the browser and node.js.
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="https://github.com/philcockfield/file-system-cache">
+          file-system-cache
+        </a>
+      </td>
+      <td>
+        <a href="https://www.npmjs.com/package/file-system-cache">
+          <img src="https://img.shields.io/npm/v/file-system-cache.svg" alt="Version">
+        </a>
+      </td>
+      <td>
+        A super-fast, promise-based cache that reads and writes to the file-system.
       </td>
     </tr>
     <tr>

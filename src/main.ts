@@ -21,6 +21,17 @@ const myCache = Cache( {
     ttl: 172800            // (optional) A time-to-live (in secs) on how long an item remains cached.
 });
 
+/**
+ * 检查是否是IP地址
+ * @param {string} IP
+ * @return {bool}
+ */
+const validIP = function(ip: string) {
+    const ipv4Exp = /^((\d|[1-9]\d|1\d\d|2([0-4]\d|5[0-5]))\.){4}$/;
+    const ipv6Exp = /^(([\da-fA-F]{1,4}):){8}$/;
+    return ipv4Exp.test(ip + ".") || ipv6Exp.test(ip + ":");
+};
+
 flow.on("query", async (params) => {
 	const [query] = z.array(z.string()).parse(params);
 	// logger.info("get query: " + query );
@@ -30,6 +41,15 @@ flow.on("query", async (params) => {
 		myCache.clear()
 		flow.showResult({
 			title: `Clear cache success!`,
+			subtitle: `Noitce`,
+			dontHideAfterAction: true,
+		})
+		return;
+	}
+
+	if(query.length> 0 && !validIP(query)) {
+		flow.showResult({
+			title: `Invalid IP address!`,
 			subtitle: `Noitce`,
 			dontHideAfterAction: true,
 		})
@@ -64,12 +84,10 @@ flow.on("query", async (params) => {
 				myCache.set(cacheKey, response.data, 172800)
 
 				data = response.data
-				
 			} else {
 				result.push({
 					title: `${response.data.message}`,
-					subtitle: ``,
-					parameters: [`${response.data.message}`],
+					subtitle: `Noitce`,
 					dontHideAfterAction: true,
 				})
 			}
@@ -78,7 +96,7 @@ flow.on("query", async (params) => {
 			logger.info(error);
 			flow.showResult({
 				title: `Err`,
-				subtitle: ``,
+				subtitle: `Noitce`,
 				parameters: [],
 				dontHideAfterAction: true,
 			})
