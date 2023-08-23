@@ -1,0 +1,12 @@
+{
+  "ID": "6df01e8af2c94d21be44be963411d6e4",
+  "ActionKeyword": "ip",
+  "Name":"IpLocation",
+  "Description": "Get the location information of an IP address plugin for Flow Launcher",
+  "Author": "znau",
+  "Version": "1.0.0",
+  "Language": "javascript",
+  "Website": "https://github.com/znau/IpLocation",
+  "ExecuteFileName": "./dist/main.js",
+  "IcoPath": "src\\assets\\favicon.ico"
+}
