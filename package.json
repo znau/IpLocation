@@ -24,6 +24,7 @@
 	},
 	"dependencies": {
 		"axios": "^1.4.0",
+		"file-system-cache": "^2.4.4",
 		"flow-launcher-helper": "^2.2.0",
 		"open": "^8.4.0",
 		"winston": "^3.8.2",

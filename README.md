@@ -2,7 +2,7 @@
 
 A plugin to get the location information of an IP address used in Flow Launcher.
 
-<p align="center">Built with <a href="https://github.com/Joehoel/flow-launcher-plugin-template-node">flow-launcher-plugin-template-node</a></p>
+<p align="left">Built with <a href="https://github.com/Joehoel/flow-launcher-plugin-template-node">flow-launcher-plugin-template-node</a></p>
 
 ## Usage
 

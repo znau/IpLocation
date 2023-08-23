@@ -4,6 +4,7 @@ import { z } from "zod";
 import logger from "./lib/logger";
 import childProcess from "child_process";
 import axios from 'axios';
+import Cache from "file-system-cache";
 
 // The events are the custom events that you define in the flow.on() method.
 const events = ["search", "copyToClipboard", "openGoogleMap"] as const;
@@ -13,55 +14,57 @@ const flow = new Flow<Events>("src/assets/favicon.ico");
 
 const copy = (content: string) => childProcess.spawn("clip").stdin.end(content);
 
+const myCache = Cache( {
+	basePath: "./cache", // (optional) Path where cache files are stored (default).
+  	ns: "ipLocation",   // (optional) A grouping namespace for items.
+  	hash: "sha1",          // (optional) A hashing algorithm used within the cache key.
+    ttl: 172800            // (optional) A time-to-live (in secs) on how long an item remains cached.
+});
 
 flow.on("query", async (params) => {
 	const [query] = z.array(z.string()).parse(params);
 	// logger.info("get query: " + query );
 
+	if(query === 'clear')
+	{
+		myCache.clear()
+		flow.showResult({
+			title: `Clear cache success!`,
+			subtitle: `Noitce`,
+			dontHideAfterAction: true,
+		})
+		return;
+	}
+
 	const result: JSONRPCResponse<Events>[] = [];
-	await axios.get(`https://ipwho.is/${query}`)
+
+	const cacheKey = query.length > 0 ? query : 'current_ip';
+
+	let data = {
+		ip: "",
+		success: true,
+		type: "",
+		country: "",
+		region: "",
+		city: "",
+		latitude: 0,
+		longitude: 0,
+	};
+
+	const cacheData = await myCache.get( cacheKey, {})
+
+	if(cacheData !== null && Object.keys(cacheData).length > 0) {
+		data = cacheData
+	} else {
+
+		await axios.get(`https://ipwho.is/${query}`)
 		.then(function (response) {
 			// handle success
 			if (response.data.success) {
-				result.push({
-					title: `${response.data.type}: ${response.data.ip}`,
-					subtitle: `Click & Copy to Clipboard`,
-					method: "copyToClipboard",
-					parameters: [`${response.data.ip}`],
-					dontHideAfterAction: true,
-				})
+				myCache.set(cacheKey, response.data, 172800)
 
-				result.push({
-					title: `Geo: ${response.data.latitude},${response.data.longitude}`,
-					subtitle: `Click & Redirect to Google Map`,
-					method: "openGoogleMap",
-					parameters: [`${response.data.latitude},${response.data.longitude}`],
-					dontHideAfterAction: true,
-				})
-
-				result.push({
-					title: `Country: ${response.data.country} `,
-					subtitle: `Click & Copy to Clipboard`,
-					method: "copyToClipboard",
-					parameters: [`${response.data.country}`],
-					dontHideAfterAction: true,
-				})
-
-				result.push({
-					title: `Region: ${response.data.region} `,
-					subtitle: `Click & Copy to Clipboard`,
-					method: "copyToClipboard",
-					parameters: [`${response.data.region}`],
-					dontHideAfterAction: true,
-				})
-
-				result.push({
-					title: `City: ${response.data.city} `,
-					subtitle: `Click & Copy to Clipboard`,
-					method: "copyToClipboard",
-					parameters: [`${response.data.city}`],
-					dontHideAfterAction: true,
-				})
+				data = response.data
+				
 			} else {
 				result.push({
 					title: `${response.data.message}`,
@@ -73,13 +76,65 @@ flow.on("query", async (params) => {
 		})
 		.catch(function (error) {
 			logger.info(error);
-			result.push({
+			flow.showResult({
 				title: `Err`,
 				subtitle: ``,
 				parameters: [],
 				dontHideAfterAction: true,
 			})
 		});
+ 
+	}
+
+	if(Object.keys(data).length > 0) {
+		result.push({
+			title: `${data.type}: ${data.ip}`,
+			subtitle: `Click & Copy to Clipboard`,
+			method: "copyToClipboard",
+			parameters: [`${data.ip}`],
+			dontHideAfterAction: true,
+		})
+
+		result.push({
+			title: `Geo: ${data.latitude},${data.longitude}`,
+			subtitle: `Click & Redirect to Google Map`,
+			method: "openGoogleMap",
+			parameters: [`${data.latitude},${data.longitude}`],
+			dontHideAfterAction: true,
+		})
+
+		result.push({
+			title: `Country: ${data.country} `,
+			subtitle: `Click & Copy to Clipboard`,
+			method: "copyToClipboard",
+			parameters: [`${data.country}`],
+			dontHideAfterAction: true,
+		})
+
+		result.push({
+			title: `Region: ${data.region} `,
+			subtitle: `Click & Copy to Clipboard`,
+			method: "copyToClipboard",
+			parameters: [`${data.region}`],
+			dontHideAfterAction: true,
+		})
+
+		result.push({
+			title: `City: ${data.city} `,
+			subtitle: `Click & Copy to Clipboard`,
+			method: "copyToClipboard",
+			parameters: [`${data.city}`],
+			dontHideAfterAction: true,
+		})
+
+	} else {
+		flow.showResult({
+			title: `Err`,
+			subtitle: ``,
+			parameters: [],
+			dontHideAfterAction: true,
+		})
+	}
 	
 	flow.showResult(...result);
 });
